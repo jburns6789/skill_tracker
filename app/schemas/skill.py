@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
 class SkillCreate(BaseModel):
@@ -11,7 +12,9 @@ class SkillOut(SkillCreate):
     model_config = ConfigDict(from_attributes=True)
 
 class SkillUpdate(BaseModel):
-    pass
+    name: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 class SkillDelete(BaseModel):
     pass

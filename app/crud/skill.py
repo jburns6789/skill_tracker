@@ -12,8 +12,18 @@ def create_skill(db: Session, skill: SkillCreate):
     return db_skill
 
 
-def update_skill(db:Session, skill: SkillUpdate):
-    pass
+def update_skill_name(db:Session, skill_id:int, skill_data: SkillUpdate):
+    skill = db.query(Skill).filter(Skill.id == skill_id).first()
+    if not skill:
+        raise HTTPException(status_code=404, detail="Skill not found")
+    
+    if skill_data.name is not None:
+        skill.name = skill_data.name
+
+    db.commit()
+    db.refresh(skill)
+    return skill
+    
 
 def delete_skill(db:Session, skill_id: int):
     skill = db.query(Skill).filter(Skill.id == skill_id).first()

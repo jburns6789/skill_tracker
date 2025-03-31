@@ -2,8 +2,8 @@ from typing import List
 from fastapi import APIRouter, Depends, Path
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
-from app.schemas.skill import SkillCreate, SkillOut
-from app.crud.skill import create_skill, get_all_skills, delete_skill
+from app.schemas.skill import SkillCreate, SkillOut, SkillUpdate
+from app.crud.skill import create_skill, get_all_skills, update_skill_name, delete_skill
 
 router = APIRouter()
 
@@ -25,6 +25,14 @@ def add_skill(skill: SkillCreate, db: Session = Depends(get_db)):
 @router.get("/skills", response_model=List[SkillOut])
 def list_skills(db: Session = Depends(get_db)):
     return get_all_skills(db)
+
+@router.put("/skills/{skill_id}", response_model=SkillOut)
+def update_skill(
+    skill_id: int,
+    skill_data: SkillUpdate,
+    db: Session = Depends(get_db)
+):
+    return update_skill_name(db, skill_id, skill_data)
 
 @router.delete("/skills/{skill_id}")
 def remove_skill(
