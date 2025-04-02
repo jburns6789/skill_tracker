@@ -1,3 +1,5 @@
+#all restful routes validation is built in with pydantic
+
 from sqlalchemy.orm import Session
 from app.models.models import Skill
 from app.schemas.skill import SkillCreate, SkillUpdate, SkillDelete, SkillOut

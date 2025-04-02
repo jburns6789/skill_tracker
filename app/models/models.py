@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey
 from sqlalchemy.orm import relationship, declarative_base
+#actual DB object, sqlalchemy does the sql calls and writes in the DB, go create the tables in Postgres based on my models.
 
 Base = declarative_base()
 
