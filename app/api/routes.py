@@ -1,11 +1,12 @@
 #endpoint logic
 
 from typing import List
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, HTTPException
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.schemas.skill import SkillCreate, SkillOut, SkillUpdate
 from app.crud.skill import create_skill, get_all_skills, update_skill_name, delete_skill
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -42,3 +43,4 @@ def remove_skill(
     db: Session = Depends(get_db)
 ):
     return delete_skill(db, skill_id)
+

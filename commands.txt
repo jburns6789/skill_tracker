@@ -1,0 +1,7 @@
+local endpoint graphql: http://127.0.0.1:8000/graphql
+
+FAST API swaggerUI: http://127.0.0.1:8000/docs
+
+uvicorn run command: uvicorn app.main:app
+
+uvicorn relaod command: uvicorn app.main:app --reload

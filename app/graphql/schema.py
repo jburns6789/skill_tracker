@@ -5,6 +5,9 @@ from app.graphql.types import Skill, SkillInput, SkillUpdateInput, SkillDelete
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 
+from strawberry.types import Info
+from app.auth.jwt import decode_access_token
+
 #Query
 @strawberry.type
 class Query:
@@ -93,7 +96,27 @@ class Mutation:
         
 schema = strawberry.Schema(query=Query, mutation=Mutation)
 
+@strawberry.field
+def skills(self, info: Info) -> List[Skill]:
+    request = info.context["request"]
+    token = request.headers.get("Authorization")
 
+    if not token or not token.startswith("Bearer "):
+        raise Exception("Unauthorized")
+    
+    payload = decode_access_token(token.split(" ")[1])
+    if not payload:
+        raise Exception("Invalid or expired token")
+    
+    user_id = payload["sub"]
+
+    db: Session = Session()
+
+    try:
+        skills = db.query(SkillModel).filter(SkillModel.user_id == user_id).all()
+        return [Skill()]
+    finally:
+        db.close()
 
 
 # browswer testing

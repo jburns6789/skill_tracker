@@ -1,20 +1,21 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship
+from app.database import Base
 #actual DB object, sqlalchemy does the sql calls and writes in the DB, go create the tables in Postgres based on my models.
-
-Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True)
+
+    id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
-    email = Column(String, unique=True)
+    email = Column(String, unique=True, index=True)
     password_hash = Column(String)
 
     skills = relationship("Skill", back_populates="user")
 
 class SkillCategory(Base):
     __tablename__ = "skill_categories"
+
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
 
@@ -22,6 +23,7 @@ class SkillCategory(Base):
 
 class Skill(Base):
     __tablename__ = "skills"
+
     id = Column(Integer, primary_key=True)
     name = Column(String)
     category_id = Column(Integer, ForeignKey("skill_categories.id"))
@@ -33,6 +35,7 @@ class Skill(Base):
 
 class Milestone(Base):
     __tablename__ = "milestones"
+
     id = Column(Integer, primary_key=True)
     title = Column(String)
     description = Column(String)
