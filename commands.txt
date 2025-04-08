@@ -5,3 +5,9 @@ FAST API swaggerUI: http://127.0.0.1:8000/docs
 uvicorn run command: uvicorn app.main:app
 
 uvicorn relaod command: uvicorn app.main:app --reload
+
+Model:
+api/ handles external requests
+schemas/ defines data structures
+auth/ encapsulates security logic
+dependiencies/ house reusable logic injections (used by routes)

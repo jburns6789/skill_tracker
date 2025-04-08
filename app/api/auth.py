@@ -1,3 +1,5 @@
+#Only includes route handlers, handles request/response logic not internal auth mechanics
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session

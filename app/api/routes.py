@@ -8,6 +8,9 @@ from app.schemas.skill import SkillCreate, SkillOut, SkillUpdate
 from app.crud.skill import create_skill, get_all_skills, update_skill_name, delete_skill
 from pydantic import BaseModel
 
+from app.auth.dependencies import get_current_user
+from app.models.models import User
+
 router = APIRouter()
 
 def get_db():
@@ -20,6 +23,10 @@ def get_db():
 @router.get("/")
 def root():
     return {"message": "SkillTree API is working!"}
+
+@router.get("/whoami")
+def read_skills(current_user: User = Depends(get_current_user)):
+    return{"message": f"User {current_user.username} is authorized"}
 
 @router.post("/skills", response_model=SkillOut)
 def add_skill(skill: SkillCreate, db: Session = Depends(get_db)):
