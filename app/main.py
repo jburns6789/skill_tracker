@@ -5,9 +5,11 @@ from app.database import init_db
 from app.api import routes, auth
 from app.graphql.schema import schema
 
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from app.utils.rate_limiter import limiter
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -16,9 +18,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 app.include_router(routes.router)
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])

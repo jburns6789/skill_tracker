@@ -13,7 +13,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.extension import Limiter
 from fastapi import Request
-from app.main import limiter
+from app.utils.rate_limiter import limiter
 
 router = APIRouter()
 
