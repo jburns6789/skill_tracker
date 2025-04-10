@@ -9,10 +9,17 @@ from app.models.models import User
 from app.auth.jwt import hash_password, verify_password, create_access_token
 from app.schemas.auth import RegisterInput, LoginInput
 
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.extension import Limiter
+from fastapi import Request
+from app.main import limiter
+
 router = APIRouter()
 
 @router.post("/register")
-def register(data: RegisterInput):
+@limiter.limit("5/minute")
+def register(request: Request, data: RegisterInput):
     db: Session = SessionLocal()
     try:
         user = db.query(User).filter(User.email == data.email).first()
@@ -33,7 +40,8 @@ def register(data: RegisterInput):
         db.close()
 
 @router.post("/login")
-def login(data: LoginInput):
+@limiter.limit("10/minute")
+def login(request: Request, data: LoginInput):
     db: Session = SessionLocal()
     try:
         user = db.query(User).filter(User.email == data.email).first()

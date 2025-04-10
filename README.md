@@ -16,7 +16,7 @@ Restful services with fastAPI and swagger, more triditional approach
 duel
 graphql layer
 
-
+protects routes, token is required to make changes to your skills
 
 
 my dad wont give me robucks

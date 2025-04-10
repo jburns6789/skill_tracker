@@ -1,7 +1,9 @@
+#actual DB object, sqlalchemy does the sql calls and writes in the DB, go create the tables in Postgres 
+#based on my models. ORM mapping, DB Session management.
+
 from sqlalchemy import Column, Integer, String, Date, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database import Base
-#actual DB object, sqlalchemy does the sql calls and writes in the DB, go create the tables in Postgres based on my models.
 
 class User(Base):
     __tablename__ = "users"
