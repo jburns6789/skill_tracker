@@ -12,11 +12,21 @@ from app.auth.jwt import decode_access_token
 @strawberry.type
 class Query:
     @strawberry.field
-    def skills(self) -> List[Skill]:
-        db:Session = SessionLocal()
+    def skills(self, info: Info) -> List[Skill]:
+        request = info.context["request"]
+        token = request.headers.get("Authorization")
+                                    
+        if not token or not token.startswith("Bearer "):
+            raise Exception("Unauthorized")
+        
+        payload = decode_access_token(token.split(" ")[1])
+        if not payload:
+            raise Exception("Invalid or expired token")
+        
+        user_id = int(payload["sub"])
+        db: Session = SessionLocal()
         try:
-            skills = db.query(SkillModel).all()
-
+            skills = db.query(SkillModel).filter(SkillModel.user_id == user_id).all()
             return [
                 Skill(
                     id=s.id,
@@ -27,7 +37,30 @@ class Query:
                 for s in skills
             ]
         finally:
-            db.close()
+            db.close()  
+
+
+
+# Not authenticated
+# @strawberry.type
+# class Query:
+#     @strawberry.field
+#     def skills(self) -> List[Skill]:
+#         db:Session = SessionLocal()
+#         try:
+#             skills = db.query(SkillModel).all()
+
+#             return [
+#                 Skill(
+#                     id=s.id,
+#                     name=s.name,
+#                     category_id=s.category_id,
+#                     user_id=s.user_id
+#                 )
+#                 for s in skills
+#             ]
+#         finally:
+#             db.close()
     
 
 #Mutation
@@ -51,7 +84,7 @@ class Mutation:
                 id=new_skill.id,
                 name=new_skill.name,
                 category_id=new_skill.category_id,
-                user_id=new_skill.user.id
+                user_id=new_skill.user_id
             )
         finally:
             db.close()
@@ -74,7 +107,7 @@ class Mutation:
                 id=skill.id,
                 name=skill.name,
                 category_id=skill.category_id,
-                user_id=skill.user.id
+                user_id=skill.user_id
             )
         finally:
             db.close()
