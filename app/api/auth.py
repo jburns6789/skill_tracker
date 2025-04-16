@@ -1,13 +1,14 @@
 #Only includes route handlers, handles request/response logic not internal auth mechanics
 #Add rate limiting at some point
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models.models import User
 from app.auth.jwt import hash_password, verify_password, create_access_token
 from app.schemas.auth import RegisterInput, LoginInput
+from fastapi.security import OAuth2PasswordRequestForm
 
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -41,12 +42,12 @@ def register(request: Request, data: RegisterInput):
 
 @router.post("/login")
 @limiter.limit("10/minute")
-def login(request: Request, data: LoginInput):
+def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     db: Session = SessionLocal()
     try:
-        user = db.query(User).filter(User.email == data.email).first()
+        user = db.query(User).filter(User.email == form_data.username).first()
 
-        if not user or not verify_password(data.password, user.password_hash):
+        if not user or not verify_password(form_data.password, user.password_hash):
             raise HTTPException(status_code=400, detail="Invalid credentials")
         
         token = create_access_token({"sub": str(user.id)})
