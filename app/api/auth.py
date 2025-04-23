@@ -9,6 +9,7 @@ from app.models.models import User
 from app.auth.jwt import hash_password, verify_password, create_access_token
 from app.schemas.auth import RegisterInput, LoginInput
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi_csrf_protect import CsrfProtect
 
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -42,7 +43,10 @@ def register(request: Request, data: RegisterInput):
 
 @router.post("/login")
 @limiter.limit("10/minute")
-def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
+def login(request: Request, 
+          form_data: OAuth2PasswordRequestForm = Depends(),
+          csrf_protect: CsrfProtect = Depends()
+):
     db: Session = SessionLocal()
     try:
         user = db.query(User).filter(User.email == form_data.username).first()

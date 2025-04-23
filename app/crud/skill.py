@@ -49,6 +49,7 @@ def delete_skill(db:Session, skill_id: int, current_user: User):
     skill = db.query(Skill).filter(
         Skill.id == skill_id,
         Skill.user_id == current_user.id
+        
     ).first()
 
     if not skill:

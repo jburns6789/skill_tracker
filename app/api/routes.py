@@ -55,7 +55,8 @@ def update_skill(
 @router.delete("/skills/{skill_id}")
 def remove_skill(
     skill_id: int = Path(..., title="ID of skill to delete"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    return delete_skill(db, skill_id)
+    return delete_skill(db, skill_id, current_user)
 

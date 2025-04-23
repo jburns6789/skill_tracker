@@ -2,12 +2,28 @@
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+
+from fastapi_csrf_protect import CsrfProtect
+from pydantic_settings import BaseSettings
+
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
 from app.models.models import User
 from app.auth.jwt import SECRET_KEY, ALGORITHM
+
+
+
+class CsrfSettings(BaseSettings):
+    secret_key: str = "secret-key"
+    cookie_samesite: str = 'lax'
+
+@CsrfProtect.load_config
+def get_csrf_config():
+    return CsrfSettings()
+
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 

@@ -11,3 +11,6 @@ api/ handles external requests
 schemas/ defines data structures
 auth/ encapsulates security logic
 dependiencies/ house reusable logic injections (used by routes)
+
+
+work on auth workflow with owership based on users
