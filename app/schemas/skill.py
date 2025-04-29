@@ -13,7 +13,6 @@ class SkillCreate(BaseModel):
         constr(pattern=r"^[a-zA-Z0-9\-_]+$")
     ]
     category_id: int
-    user_id: int
 
     @field_validator("name")
     @classmethod

@@ -1,0 +1,11 @@
+Testing Checklist
+
+Verify CORS blocks requests from unauthorized domains
+
+Test CSRF token requirement on POST/PUT/DELETE endpoints
+
+Confirm invalid inputs (e.g., emails without "@") are rejected
+
+Check SQL injection attempts are blocked by ORM/schema validation
+
+Your backend will now meet modern security standards for CORS, CSRF, and input validation.
