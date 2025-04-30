@@ -13,6 +13,10 @@ from app.utils.rate_limiter import limiter
 
 from fastapi.middleware.cors import CORSMiddleware
 
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
@@ -43,3 +47,11 @@ app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 
 graphql_app = GraphQLRouter(schema)
 app.include_router(graphql_app, prefix="/graphql")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()}
+    )

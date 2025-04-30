@@ -12,15 +12,15 @@ def override_get_db():
     finally:
         db.close()
 
-def mock_get_current_user():
+def override_get_current_user():
     return User(id=1, username="testuser")
 
 app.dependency_overrides[get_db] = override_get_db
-app.dependency_overrides[get_current_user] = mock_get_current_user
+app.dependency_overrides[get_current_user] = override_get_current_user
 
 client = TestClient(app)
 
-def test_create_skill():
+def test_create_skill(client):
     response = client.post(
         "/skills",
         json={
@@ -33,5 +33,14 @@ def test_create_skill():
     assert data["name"] == "TestingSkill"
     assert data["category_id"] == 1
     assert "id" in data
+    assert data["user_id"] == 1
 
-#Makes sure the skill is created successfully and the response is structured as expected
+#Makes sure the skill is created successfully and the response is structured as expected.
+    
+def test_get_skills(client):
+    response = client.get("/skills")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+#Makes sure the skill list object is returned successfully and the response is structured as expected.
+
