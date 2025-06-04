@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 from contextlib import asynccontextmanager
-from app.database import init_db
+from app.database import init_db, AsyncSessionLocal
 from app.api import routes, auth
 from app.graphql.schema import schema
 
@@ -19,7 +19,7 @@ from fastapi.responses import JSONResponse
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
+    await init_db()
     yield
 
 app = FastAPI(lifespan=lifespan)

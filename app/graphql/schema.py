@@ -3,7 +3,7 @@ from typing import List
 from app.models.models import Skill as SkillModel
 from app.graphql.types import Skill, SkillInput, SkillUpdateInput, SkillDelete
 from sqlalchemy.orm import Session
-from app.database import SessionLocal
+from app.database import AsyncSessionLocal
 
 from strawberry.types import Info
 from app.auth.jwt import decode_access_token
@@ -24,7 +24,7 @@ class Query:
             raise Exception("Invalid or expired token")
         
         user_id = int(payload["sub"])
-        db: Session = SessionLocal()
+        db: Session = AsyncSessionLocal()
         try:
             skills = db.query(SkillModel).filter(SkillModel.user_id == user_id).all()
             return [
@@ -69,7 +69,7 @@ class Mutation:
 
     @strawberry.mutation
     def create_skill(self, input: SkillInput) -> Skill:
-        db: Session = SessionLocal()
+        db: Session = AsyncSessionLocal()
         try:
             new_skill = SkillModel(
                 name=input.name,
@@ -92,7 +92,7 @@ class Mutation:
 
     @strawberry.mutation
     def update_skill(self, input: SkillUpdateInput) -> Skill:
-        db: Session = SessionLocal()
+        db: Session = AsyncSessionLocal()
         try:
             skill = db.query(SkillModel).filter(SkillModel.id == input.id).first()
 
@@ -115,7 +115,7 @@ class Mutation:
 
     @strawberry.mutation    
     def delete_skill(self, id: int) -> bool:
-        db: Session = SessionLocal()
+        db: Session = AsyncSessionLocal()
         try:
             skill = db.query(SkillModel).filter(SkillModel.id == id).first()
             if not skill:

@@ -1,6 +1,8 @@
+import pytest
 from app.schemas.skill import SkillCreate
 from app.crud.skill import create_skill
 from app.models.models import User
+from app.database import AsyncSessionLocal
 
 class FakeDB:
     def __init__(self):

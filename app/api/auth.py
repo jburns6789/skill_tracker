@@ -2,14 +2,21 @@
 #Add rate limiting at some point
 
 from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
+
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from app.database import SessionLocal
+from app.database import AsyncSessionLocal
 from app.models.models import User
 from app.auth.jwt import hash_password, verify_password, create_access_token
 from app.schemas.auth import RegisterInput, LoginInput
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_csrf_protect import CsrfProtect
+
+from app.database import get_db
+from app.models.models import User
 
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -21,10 +28,15 @@ router = APIRouter()
 
 @router.post("/register")
 @limiter.limit("5/minute")
-def register(request: Request, data: RegisterInput):
-    db: Session = SessionLocal()
+async def register(
+    request: Request, 
+    data: RegisterInput,
+    db: AsyncSession = Depends(get_db)
+):
     try:
-        user = db.query(User).filter(User.email == data.email).first()
+        result = await db.execute(select(User).where(User.email == data.email))
+        user = result.scalar_one_or_none()
+
         if user:
             raise HTTPException(status_code=400, detail="Email already registered")
         
@@ -34,22 +46,35 @@ def register(request: Request, data: RegisterInput):
             password_hash=hash_password(data.password)
         )
         db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
+        await db.commit()
+        await db.refresh(new_user)
         return{"message": "User created successfully"}
     
-    finally:
-        db.close()
+    except IntegrityError as e:
+        await db.rollback()
+        if "ix_users_username" in str(e):
+            raise HTTPException(status_code=400, detail="Username already in use")
+        elif "ix_users_email" in str(e):
+            raise HTTPException(status_code=400, detail="Email already registered")
+        else:
+            raise HTTPException(status_code=500, detail="Database error")
+    
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/login")
 @limiter.limit("10/minute")
-def login(request: Request, 
-          form_data: OAuth2PasswordRequestForm = Depends(),
-          csrf_protect: CsrfProtect = Depends()
+async def login(
+    request: Request, 
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    csrf_protect: CsrfProtect = Depends(),
+    db: AsyncSession = Depends(get_db)
 ):
-    db: Session = SessionLocal()
+    
     try:
-        user = db.query(User).filter(User.email == form_data.username).first()
+        result = await db.execute(select(User).where(User.email == form_data.username))
+        user = result.scalar_one_or_none()
 
         if not user or not verify_password(form_data.password, user.password_hash):
             raise HTTPException(status_code=400, detail="Invalid credentials")
@@ -57,5 +82,5 @@ def login(request: Request,
         token = create_access_token({"sub": str(user.id)})
         return {"access_token": token, "token_type": "bearer"}
     
-    finally:
-        db.close()
+    except Exception as e:
+        raise HTTPException(stauts_code=500, detail=str(e))

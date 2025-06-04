@@ -9,7 +9,7 @@ from pydantic_settings import BaseSettings
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from app.database import SessionLocal
+from app.database import AsyncSessionLocal
 from app.models.models import User
 from app.auth.jwt import SECRET_KEY, ALGORITHM
 
@@ -28,7 +28,7 @@ def get_csrf_config():
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def get_db():
-    db = SessionLocal()
+    db = AsyncSessionLocal()
     try:
         yield db
     finally:
