@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: skilltracker-api
+  template:
+    metadata:
+      labels:
+        app: skilltracker-api
+    spec:
+      containers:
+      - name: fastapi
+        image: skilltracker-api
+        ports:
+        - containerPort: 8000
