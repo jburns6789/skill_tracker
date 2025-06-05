@@ -25,11 +25,11 @@ async def get_db():
             await session.close()
 
 @router.get("/")
-def root():
+async def root():
     return {"message": "SkillTree API is working!"}
 
 @router.get("/whoami")
-def read_skills(current_user: User = Depends(get_current_user)):
+async def read_skills(current_user: User = Depends(get_current_user)):
     return{"message": f"User {current_user.username} is authorized"}
 
 @router.post("/skills", response_model=SkillOut, status_code=status.HTTP_201_CREATED)
@@ -58,10 +58,10 @@ async def update_skill(
     return await update_skill_name(db, skill_id, skill_data, current_user)
 
 @router.delete("/skills/{skill_id}")
-def remove_skill(
+async def remove_skill(
     skill_id: int = Path(..., title="ID of skill to delete"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return delete_skill(db, skill_id, current_user)
+    return await delete_skill(db, skill_id, current_user)
 

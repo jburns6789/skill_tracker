@@ -7,12 +7,16 @@ from fastapi_csrf_protect import CsrfProtect
 from pydantic_settings import BaseSettings
 
 from jose import JWTError, jwt
+
 from sqlalchemy.orm import Session
+from sqlalchemy import select
+from typing import AsyncGenerator
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
 
 from app.database import AsyncSessionLocal
 from app.models.models import User
 from app.auth.jwt import SECRET_KEY, ALGORITHM
-
 
 
 class CsrfSettings(BaseSettings):
@@ -23,18 +27,15 @@ class CsrfSettings(BaseSettings):
 def get_csrf_config():
     return CsrfSettings()
 
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSessionLocal() as session:
+        yield session
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-def get_db():
-    db = AsyncSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
+                           ) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid authentication credentials",
@@ -43,15 +44,18 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: int = payload.get("sub")
-        if user_id is None:
+        user_id_str: str = payload.get("sub")
+        if not user_id_str:
             raise credentials_exception
-    except JWTError:
+        
+        user_id = int(user_id_str)
+    except(JWTError, ValueError):
         raise credentials_exception
     
-    user = db.query(User).filter(User.id == user_id).first()
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
     if user is None:
-        raise credentials_exception
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     
     return user
     
